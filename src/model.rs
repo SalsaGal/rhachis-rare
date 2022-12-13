@@ -43,7 +43,7 @@ impl TextureVertex {
             array_stride: size_of::<Self>() as u64,
             step_mode: wgpu::VertexStepMode::Vertex,
             attributes: &[wgpu::VertexAttribute {
-                format: wgpu::VertexFormat::Float32,
+                format: wgpu::VertexFormat::Float32x3,
                 offset: 0,
                 shader_location: 0,
             }],

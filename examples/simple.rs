@@ -1,14 +1,34 @@
-use rhachis::{graphics::EmptyRenderer, *};
+use renderer::{Renderer, model::{Model, TextureVertex}};
+use rhachis::*;
 
 #[rhachis::run]
 struct Simple {
-    renderer: EmptyRenderer,
+    renderer: Renderer,
 }
 
 impl Game for Simple {
-    fn init(_: &GameData) -> Self {
+    fn init(data: &GameData) -> Self {
+        let mut renderer = Renderer::new(data);
+        renderer.models.push(Model::new(
+            data,
+            &[
+                TextureVertex {
+                    pos: [0.0, 0.0, 0.0],
+                },
+                TextureVertex {
+                    pos: [1.0, 0.0, 0.0],
+                },
+                TextureVertex {
+                    pos: [0.0, 1.0, 0.0],
+                },
+            ],
+            &[
+                0, 1, 2
+            ]
+        ));
+
         Self {
-            renderer: EmptyRenderer,
+            renderer
         }
     }
 
