@@ -1,4 +1,4 @@
-use rhachis::{*, graphics::EmptyRenderer};
+use rhachis::{graphics::EmptyRenderer, *};
 
 #[rhachis::run]
 struct Simple {
@@ -7,7 +7,9 @@ struct Simple {
 
 impl Game for Simple {
     fn init(_: &GameData) -> Self {
-        Self { renderer: EmptyRenderer }
+        Self {
+            renderer: EmptyRenderer,
+        }
     }
 
     fn get_renderer(&mut self) -> &mut dyn graphics::Renderer {
