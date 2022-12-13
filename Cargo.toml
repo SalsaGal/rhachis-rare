@@ -10,3 +10,7 @@ bytemuck = { version = "1.12.1", features = ["derive"] }
 glam = "0.22"
 rhachis = "0.7.1"
 wgpu = "0.14"
+
+[features]
+default = ["debug"]
+debug = []
