@@ -1,14 +1,12 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
+use rhachis::GameData;
+
+pub struct Renderer {
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+impl Renderer {
+    pub fn new(data: &GameData) -> Self {
+        Self {}
     }
 }
+
+impl rhachis::graphics::Renderer for Renderer {}
