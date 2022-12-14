@@ -71,7 +71,7 @@ impl Renderer {
 
         Self {
             models: IdMap::new(),
-            materials: MaterialManager::new(),
+            materials: MaterialManager::new(data),
             unshaded_pipeline,
         }
     }

@@ -8,7 +8,8 @@ edition = "2021"
 [dependencies]
 bytemuck = { version = "1.12.1", features = ["derive"] }
 glam = "0.22"
-rhachis = "0.7.1"
+image = "0.24.5"
+rhachis = { git = "https://github.com/SalsaGal/rhachis" }
 wgpu = "0.14"
 
 [features]
