@@ -2,7 +2,7 @@ use renderer::{
     model::{Model, TextureVertex},
     Renderer,
 };
-use rhachis::*;
+use rhachis::{*, renderers::Transform};
 
 #[rhachis::run]
 struct Simple {
@@ -30,6 +30,7 @@ impl Game for Simple {
             ],
             vec![0, 1, 2],
             renderer.materials.error_mat.clone(),
+            vec![Transform::scale((1.0, 0.5, 1.0))],
         ));
 
         Self { renderer }

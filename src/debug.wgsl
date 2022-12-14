@@ -8,10 +8,24 @@ struct VertexOutput {
     @location(0) tex_coords: vec2<f32>,
 };
 
+struct Transform {
+    @location(2) data0: vec4<f32>,
+    @location(3) data1: vec4<f32>,
+    @location(4) data2: vec4<f32>,
+    @location(5) data3: vec4<f32>,
+};
+
 @vertex
-fn unshaded_vertex(in: VertexInput) -> VertexOutput {
+fn unshaded_vertex(in: VertexInput, transform: Transform) -> VertexOutput {
+    let transform_matrix = mat4x4<f32>(
+        transform.data0,
+        transform.data1,
+        transform.data2,
+        transform.data3,
+    );
+
     var output: VertexOutput;
-    output.pos = vec4<f32>(in.pos, 1.0);
+    output.pos = transform_matrix * vec4<f32>(in.pos, 1.0);
     output.tex_coords = in.tex_coords;
     return output;
 }

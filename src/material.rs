@@ -1,4 +1,4 @@
-use std::sync::{Weak, Arc};
+use std::sync::{Arc, Weak};
 
 use image::ImageError;
 use rhachis::{renderers::Texture, GameData, IdMap};
@@ -22,7 +22,8 @@ impl Material {
     }
 
     pub fn bind_group_layout(data: &GameData) -> wgpu::BindGroupLayout {
-        data.graphics.device
+        data.graphics
+            .device
             .create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
                 label: None,
                 entries: &[

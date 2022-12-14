@@ -1,9 +1,9 @@
 pub mod material;
 pub mod model;
 
-use material::{MaterialManager, Material};
+use material::{Material, MaterialManager};
 use model::{Model, TextureVertex};
-use rhachis::{GameData, IdMap};
+use rhachis::{GameData, IdMap, renderers::Transform};
 use wgpu::RenderPipeline;
 
 pub struct Renderer {
@@ -40,7 +40,7 @@ impl Renderer {
                     vertex: wgpu::VertexState {
                         module: &debug_shader,
                         entry_point: "unshaded_vertex",
-                        buffers: &[TextureVertex::desc()],
+                        buffers: &[TextureVertex::desc(), Transform::desc()],
                     },
                     primitive: wgpu::PrimitiveState {
                         topology: wgpu::PrimitiveTopology::TriangleList,
@@ -82,6 +82,7 @@ impl rhachis::graphics::Renderer for Renderer {
         render_pass.set_pipeline(&self.unshaded_pipeline);
         for model in &self.models {
             render_pass.set_vertex_buffer(0, model.vertex_buffer.slice(..));
+            render_pass.set_vertex_buffer(1, model.transforms.buffer.slice(..));
             render_pass.set_index_buffer(model.indices.buffer.slice(..), wgpu::IndexFormat::Uint16);
             render_pass.set_bind_group(0, &self.materials.error_mat.color.bind_group, &[]);
             render_pass.draw_indexed(0..model.indices.buffer_len, 0, 0..1);

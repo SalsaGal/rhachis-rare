@@ -1,6 +1,6 @@
 use std::{mem::size_of, sync::Arc};
 
-use rhachis::{graphics::BufferData, GameData};
+use rhachis::{graphics::BufferData, GameData, renderers::Transform};
 use wgpu::{
     util::{BufferInitDescriptor, DeviceExt},
     Buffer, VertexBufferLayout,
@@ -12,6 +12,7 @@ pub struct Model {
     pub(crate) vertices: Vec<TextureVertex>,
     pub(crate) vertex_buffer: Buffer,
     pub(crate) indices: BufferData<u16>,
+    pub(crate) transforms: BufferData<Transform, [[f32; 4]; 4]>,
     pub(crate) material: Arc<Material>,
 }
 
@@ -21,6 +22,7 @@ impl Model {
         vertices: Vec<TextureVertex>,
         indices: Vec<u16>,
         material: Arc<Material>,
+        transforms: Vec<Transform>,
     ) -> Self {
         let vertex_buffer = data
             .graphics
@@ -32,12 +34,14 @@ impl Model {
             });
 
         let indices = BufferData::new(data, indices, wgpu::BufferUsages::INDEX);
+        let transforms = BufferData::new(data, transforms, wgpu::BufferUsages::VERTEX);
 
         Self {
             vertices,
             vertex_buffer,
             indices,
             material,
+            transforms,
         }
     }
 }
@@ -61,7 +65,7 @@ impl TextureVertex {
                     shader_location: 0,
                 },
                 wgpu::VertexAttribute {
-                    format: wgpu::VertexFormat::Float32x3,
+                    format: wgpu::VertexFormat::Float32x2,
                     offset: size_of::<[f32; 3]>() as u64,
                     shader_location: 1,
                 },
