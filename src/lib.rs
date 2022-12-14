@@ -1,7 +1,7 @@
 pub mod material;
 pub mod model;
 
-use material::MaterialManager;
+use material::{MaterialManager, Material};
 use model::{Model, TextureVertex};
 use rhachis::{GameData, IdMap};
 use wgpu::RenderPipeline;
@@ -27,7 +27,7 @@ impl Renderer {
                 .device
                 .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
                     label: None,
-                    bind_group_layouts: &[],
+                    bind_group_layouts: &[&Material::bind_group_layout(data)],
                     push_constant_ranges: &[],
                 });
 
@@ -83,6 +83,7 @@ impl rhachis::graphics::Renderer for Renderer {
         for model in &self.models {
             render_pass.set_vertex_buffer(0, model.vertex_buffer.slice(..));
             render_pass.set_index_buffer(model.indices.buffer.slice(..), wgpu::IndexFormat::Uint16);
+            render_pass.set_bind_group(0, &self.materials.error_mat.color.bind_group, &[]);
             render_pass.draw_indexed(0..model.indices.buffer_len, 0, 0..1);
         }
     }
