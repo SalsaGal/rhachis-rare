@@ -6,7 +6,7 @@ use wgpu::RenderPipeline;
 
 pub struct Renderer {
     pub models: IdMap<Model>,
-    solid_pipeline: RenderPipeline,
+    unshaded_pipeline: RenderPipeline,
 }
 
 impl Renderer {
@@ -19,7 +19,7 @@ impl Renderer {
                     source: wgpu::ShaderSource::Wgsl(include_str!("debug.wgsl").into()),
                 });
 
-        let solid_pipeline_layout =
+        let unshaded_pipeline_layout =
             data.graphics
                 .device
                 .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
@@ -28,15 +28,15 @@ impl Renderer {
                     push_constant_ranges: &[],
                 });
 
-        let solid_pipeline =
+        let unshaded_pipeline =
             data.graphics
                 .device
                 .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-                    label: Some("solid_pipeline"),
-                    layout: Some(&solid_pipeline_layout),
+                    label: Some("unshaded_pipeline"),
+                    layout: Some(&unshaded_pipeline_layout),
                     vertex: wgpu::VertexState {
                         module: &debug_shader,
-                        entry_point: "solid_vertex",
+                        entry_point: "unshaded_vertex",
                         buffers: &[TextureVertex::desc()],
                     },
                     primitive: wgpu::PrimitiveState {
@@ -55,7 +55,7 @@ impl Renderer {
                         alpha_to_coverage_enabled: false,
                     },
                     fragment: Some(wgpu::FragmentState {
-                        entry_point: "solid_fragment",
+                        entry_point: "unshaded_fragment",
                         module: &debug_shader,
                         targets: &[Some(wgpu::ColorTargetState {
                             format: data.graphics.config.format,
@@ -68,14 +68,14 @@ impl Renderer {
 
         Self {
             models: IdMap::new(),
-            solid_pipeline,
+            unshaded_pipeline,
         }
     }
 }
 
 impl rhachis::graphics::Renderer for Renderer {
     fn render<'a, 'b: 'a>(&'b self, render_pass: &'a mut wgpu::RenderPass<'b>) {
-        render_pass.set_pipeline(&self.solid_pipeline);
+        render_pass.set_pipeline(&self.unshaded_pipeline);
         for model in &self.models {
             render_pass.set_vertex_buffer(0, model.vertex_buffer.slice(..));
             render_pass.set_index_buffer(model.indices.buffer.slice(..), wgpu::IndexFormat::Uint16);
