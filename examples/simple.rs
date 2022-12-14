@@ -2,7 +2,7 @@ use renderer::{
     model::{Model, TextureVertex},
     Renderer,
 };
-use rhachis::{*, renderers::Transform};
+use rhachis::{renderers::Transform, *};
 
 #[rhachis::run]
 struct Simple {

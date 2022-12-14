@@ -1,6 +1,6 @@
 use std::{mem::size_of, sync::Arc};
 
-use rhachis::{graphics::BufferData, GameData, renderers::Transform};
+use rhachis::{graphics::BufferData, renderers::Transform, GameData};
 use wgpu::{
     util::{BufferInitDescriptor, DeviceExt},
     Buffer, VertexBufferLayout,
