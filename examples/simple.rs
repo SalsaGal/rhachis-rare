@@ -26,7 +26,7 @@ impl Game for Simple {
                 },
             ],
             vec![0, 1, 2],
-            vec![],
+            renderer.materials.error_mat.clone(),
         ));
 
         Self { renderer }

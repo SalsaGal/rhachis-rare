@@ -1,4 +1,4 @@
-use std::sync::{Arc, Weak};
+use std::sync::{Weak, Arc};
 
 use image::ImageError;
 use rhachis::{renderers::Texture, GameData, IdMap};
@@ -22,22 +22,22 @@ impl Material {
     }
 }
 
+pub enum MaterialError {
+    ImageError(ImageError),
+}
+
 pub struct MaterialManager {
-    pub demand_mats: IdMap<Weak<Material>>,
-    pub static_mats: IdMap<Arc<Material>>,
-    pub error_mat: Material,
+    pub droppable_mats: IdMap<Weak<Material>>,
+    pub hold_mats: IdMap<Arc<Material>>,
+    pub error_mat: Arc<Material>,
 }
 
 impl MaterialManager {
-    pub(crate) fn new(data: &GameData) -> Self {
+    pub fn new(data: &GameData) -> Self {
         Self {
-            demand_mats: IdMap::new(),
-            static_mats: IdMap::new(),
-            error_mat: Material::error(data),
+            droppable_mats: IdMap::new(),
+            hold_mats: IdMap::new(),
+            error_mat: Arc::new(Material::error(data)),
         }
     }
-}
-
-pub enum MaterialError {
-    ImageError(ImageError),
 }

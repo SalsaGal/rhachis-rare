@@ -1,4 +1,4 @@
-use std::mem::size_of;
+use std::{mem::size_of, sync::Arc};
 
 use rhachis::{graphics::BufferData, GameData};
 use wgpu::{
@@ -6,11 +6,13 @@ use wgpu::{
     Buffer, VertexBufferLayout,
 };
 
+use crate::material::Material;
+
 pub struct Model {
     pub(crate) vertices: Vec<TextureVertex>,
     pub(crate) vertex_buffer: Buffer,
     pub(crate) indices: BufferData<u16>,
-    pub(crate) materials: Vec<usize>,
+    pub(crate) material: Arc<Material>,
 }
 
 impl Model {
@@ -18,7 +20,7 @@ impl Model {
         data: &GameData,
         vertices: Vec<TextureVertex>,
         indices: Vec<u16>,
-        materials: Vec<usize>,
+        material: Arc<Material>,
     ) -> Self {
         let vertex_buffer = data
             .graphics
@@ -35,7 +37,7 @@ impl Model {
             vertices,
             vertex_buffer,
             indices,
-            materials,
+            material,
         }
     }
 }
