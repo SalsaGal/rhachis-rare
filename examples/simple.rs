@@ -1,4 +1,7 @@
-use renderer::{Renderer, model::{Model, TextureVertex}};
+use renderer::{
+    model::{Model, TextureVertex},
+    Renderer,
+};
 use rhachis::*;
 
 #[rhachis::run]
@@ -11,7 +14,7 @@ impl Game for Simple {
         let mut renderer = Renderer::new(data);
         renderer.models.push(Model::new(
             data,
-            &[
+            vec![
                 TextureVertex {
                     pos: [0.0, 0.0, 0.0],
                 },
@@ -22,14 +25,11 @@ impl Game for Simple {
                     pos: [0.0, 1.0, 0.0],
                 },
             ],
-            &[
-                0, 1, 2
-            ]
+            vec![0, 1, 2],
+            vec![],
         ));
 
-        Self {
-            renderer
-        }
+        Self { renderer }
     }
 
     fn get_renderer(&mut self) -> &mut dyn graphics::Renderer {

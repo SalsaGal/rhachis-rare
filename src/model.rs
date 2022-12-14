@@ -7,26 +7,35 @@ use wgpu::{
 };
 
 pub struct Model {
+    pub(crate) vertices: Vec<TextureVertex>,
     pub(crate) vertex_buffer: Buffer,
     pub(crate) indices: BufferData<u16>,
+    pub(crate) materials: Vec<usize>,
 }
 
 impl Model {
-    pub fn new(data: &GameData, vertices: &[TextureVertex], indices: &[u16]) -> Self {
+    pub fn new(
+        data: &GameData,
+        vertices: Vec<TextureVertex>,
+        indices: Vec<u16>,
+        materials: Vec<usize>,
+    ) -> Self {
         let vertex_buffer = data
             .graphics
             .device
             .create_buffer_init(&BufferInitDescriptor {
                 label: None,
-                contents: bytemuck::cast_slice(vertices),
+                contents: bytemuck::cast_slice(&vertices),
                 usage: wgpu::BufferUsages::VERTEX,
             });
 
-        let indices = BufferData::new(data, indices.to_vec(), wgpu::BufferUsages::INDEX);
+        let indices = BufferData::new(data, indices, wgpu::BufferUsages::INDEX);
 
         Self {
+            vertices,
             vertex_buffer,
             indices,
+            materials,
         }
     }
 }

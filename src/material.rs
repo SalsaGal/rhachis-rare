@@ -1,4 +1,4 @@
-use std::sync::{Weak, Arc};
+use std::sync::{Arc, Weak};
 
 use rhachis::{renderers::Texture, IdMap};
 
