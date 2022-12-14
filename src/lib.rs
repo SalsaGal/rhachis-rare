@@ -1,11 +1,14 @@
+pub mod material;
 pub mod model;
 
+use material::MaterialManager;
 use model::{Model, TextureVertex};
 use rhachis::{GameData, IdMap};
 use wgpu::RenderPipeline;
 
 pub struct Renderer {
     pub models: IdMap<Model>,
+    pub materials: MaterialManager,
     unshaded_pipeline: RenderPipeline,
 }
 
@@ -68,6 +71,7 @@ impl Renderer {
 
         Self {
             models: IdMap::new(),
+            materials: MaterialManager::new(),
             unshaded_pipeline,
         }
     }
