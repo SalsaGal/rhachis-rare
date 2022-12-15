@@ -66,7 +66,7 @@ impl Game for Simple {
         } else if data.input.is_key(Key::Left, InputState::Down) {
             self.renderer.camera[0].pos.x -= 1.0 * data.delta_time.as_secs_f32();
         }
-        if data.input.is_key(Key::Tab, InputState::Pressed) {
+        if data.input.is_key(Key::Space, InputState::Pressed) {
             self.renderer.camera[0].ty = match self.renderer.camera[0].ty {
                 CameraType::LookAt(..) => CameraType::LookTo(Vec3::NEG_Z),
                 CameraType::LookTo(..) => CameraType::LookAt(Vec3::ZERO),
