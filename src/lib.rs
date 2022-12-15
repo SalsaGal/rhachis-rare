@@ -1,21 +1,30 @@
+pub mod camera;
 pub mod material;
 pub mod model;
 
 use std::sync::Arc;
 
+use camera::Camera;
+use glam::Mat4;
 use material::Material;
 use model::{Model, TextureVertex};
-use rhachis::{renderers::Transform, GameData, IdMap};
-use wgpu::RenderPipeline;
+use rhachis::{
+    graphics::{Bindable, BufferData},
+    renderers::Transform,
+    GameData, IdMap,
+};
+use wgpu::{BindGroup, RenderPipeline};
 
 pub struct Renderer {
     pub models: IdMap<Model>,
     pub error_material: Arc<Material>,
+    pub camera: BufferData<Camera, [[f32; 4]; 4]>,
+    camera_bind_group: BindGroup,
     unshaded_pipeline: RenderPipeline,
 }
 
 impl Renderer {
-    pub fn new(data: &GameData) -> Self {
+    pub fn new(data: &GameData, camera: Camera) -> Self {
         let debug_shader =
             data.graphics
                 .device
@@ -29,7 +38,10 @@ impl Renderer {
                 .device
                 .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
                     label: None,
-                    bind_group_layouts: &[&Material::bind_group_layout(data)],
+                    bind_group_layouts: &[
+                        &Material::bind_group_layout(data),
+                        &Transform::bind_group_layout(data),
+                    ],
                     push_constant_ranges: &[],
                 });
 
@@ -71,9 +83,31 @@ impl Renderer {
                     multiview: None,
                 });
 
+        let camera = BufferData::new(
+            data,
+            vec![camera],
+            wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+        );
+
+        let camera_bind_group =
+            data.graphics
+                .device
+                .create_bind_group(&wgpu::BindGroupDescriptor {
+                    label: None,
+                    layout: &Mat4::bind_group_layout(data),
+                    entries: &[wgpu::BindGroupEntry {
+                        binding: 0,
+                        resource: wgpu::BindingResource::Buffer(
+                            camera.buffer.as_entire_buffer_binding(),
+                        ),
+                    }],
+                });
+
         Self {
             models: IdMap::new(),
             error_material: Arc::new(Material::error(data)),
+            camera,
+            camera_bind_group,
             unshaded_pipeline,
         }
     }
@@ -87,6 +121,7 @@ impl rhachis::graphics::Renderer for Renderer {
             render_pass.set_vertex_buffer(1, model.transforms.buffer.slice(..));
             render_pass.set_index_buffer(model.indices.buffer.slice(..), wgpu::IndexFormat::Uint16);
             render_pass.set_bind_group(0, &model.material.color.bind_group, &[]);
+            render_pass.set_bind_group(1, &self.camera_bind_group, &[]);
             render_pass.draw_indexed(0..model.indices.buffer_len, 0, 0..1);
         }
     }

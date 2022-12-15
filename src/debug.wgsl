@@ -15,6 +15,9 @@ struct Transform {
     @location(5) data3: vec4<f32>,
 };
 
+@group(1)@binding(0)
+var<uniform> camera: Transform;
+
 @vertex
 fn unshaded_vertex(in: VertexInput, transform: Transform) -> VertexOutput {
     let transform_matrix = mat4x4<f32>(
@@ -23,9 +26,15 @@ fn unshaded_vertex(in: VertexInput, transform: Transform) -> VertexOutput {
         transform.data2,
         transform.data3,
     );
+    let camera_matrix = mat4x4<f32>(
+        camera.data0,
+        camera.data1,
+        camera.data2,
+        camera.data3,
+    );
 
     var output: VertexOutput;
-    output.pos = transform_matrix * vec4<f32>(in.pos, 1.0);
+    output.pos = camera_matrix * transform_matrix * vec4<f32>(in.pos, 1.0);
     output.tex_coords = in.tex_coords;
     return output;
 }
