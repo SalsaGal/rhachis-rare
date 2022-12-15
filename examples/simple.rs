@@ -1,10 +1,14 @@
 use std::sync::Arc;
 
 use renderer::{
+    material::Material,
     model::{Model, TextureVertex},
-    Renderer, material::Material,
+    Renderer,
 };
-use rhachis::{renderers::Transform, *};
+use rhachis::{
+    renderers::{Texture, Transform},
+    *,
+};
 
 #[rhachis::run]
 struct Simple {
@@ -14,7 +18,10 @@ struct Simple {
 impl Game for Simple {
     fn init(data: &GameData) -> Self {
         let mut renderer = Renderer::new(data);
-        let material = Arc::new(Material::error(data));
+        let material = Arc::new(Material {
+            color: Texture::from_path(data, "examples/test.png", &graphics::SamplerType::Linear)
+                .unwrap(),
+        });
         renderer.models.push(Model::new(
             data,
             vec![

@@ -9,7 +9,6 @@ use wgpu::{
 use crate::material::Material;
 
 pub struct Model {
-    pub(crate) vertices: Vec<TextureVertex>,
     pub(crate) vertex_buffer: Buffer,
     pub(crate) indices: BufferData<u16>,
     pub(crate) transforms: BufferData<Transform, [[f32; 4]; 4]>,
@@ -37,7 +36,6 @@ impl Model {
         let transforms = BufferData::new(data, transforms, wgpu::BufferUsages::VERTEX);
 
         Self {
-            vertices,
             vertex_buffer,
             indices,
             material,
