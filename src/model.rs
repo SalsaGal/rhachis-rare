@@ -12,7 +12,7 @@ pub struct Model {
     pub(crate) vertex_buffer: Buffer,
     pub indices: BufferData<u16>,
     pub transforms: BufferData<Transform, [[f32; 4]; 4]>,
-    pub(crate) material: Arc<Material>,
+    pub material: Arc<Material>,
 }
 
 impl Model {
