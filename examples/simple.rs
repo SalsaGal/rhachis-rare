@@ -9,7 +9,7 @@ use renderer::{
 };
 use rhachis::{
     renderers::{Texture, Transform},
-    *,
+    *, input::{Key, InputState},
 };
 
 #[rhachis::run]
@@ -59,6 +59,19 @@ impl Game for Simple {
     fn update(&mut self, data: &GameData) {
         let x = f32::sin(data.start_time.elapsed().as_secs_f32()).abs();
         self.renderer.models[0].transforms[0] = Transform::scale((1.0, x, 1.0));
+
+        if data.input.is_key(Key::Right, InputState::Down) {
+            self.renderer.camera[0].pos.x += 1.0 * data.delta_time.as_secs_f32();
+        } else if data.input.is_key(Key::Left, InputState::Down) {
+            self.renderer.camera[0].pos.x -= 1.0 * data.delta_time.as_secs_f32();
+        }
+        if data.input.is_key(Key::Tab, InputState::Pressed) {
+            self.renderer.camera[0].ty = match self.renderer.camera[0].ty {
+                CameraType::LookAt(..) => CameraType::LookTo(Vec3::NEG_Z),
+                CameraType::LookTo(..) => CameraType::LookAt(Vec3::ZERO),
+            };
+        }
+        self.renderer.camera.update(data);
     }
 
     fn get_renderer(&mut self) -> &mut dyn graphics::Renderer {
