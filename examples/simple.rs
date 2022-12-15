@@ -59,7 +59,6 @@ impl Game for Simple {
     fn update(&mut self, data: &GameData) {
         let x = f32::sin(data.start_time.elapsed().as_secs_f32()).abs();
         self.renderer.models[0].transforms[0] = Transform::scale((1.0, x, 1.0));
-        dbg!(x);
     }
 
     fn get_renderer(&mut self) -> &mut dyn graphics::Renderer {
