@@ -90,4 +90,10 @@ impl rhachis::graphics::Renderer for Renderer {
             render_pass.draw_indexed(0..model.indices.buffer_len, 0, 0..1);
         }
     }
+
+    fn update(&mut self, data: &GameData) {
+        for model in &mut self.models {
+            model.transforms.update(data);
+        }
+    }
 }

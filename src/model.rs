@@ -10,8 +10,8 @@ use crate::material::Material;
 
 pub struct Model {
     pub(crate) vertex_buffer: Buffer,
-    pub(crate) indices: BufferData<u16>,
-    pub(crate) transforms: BufferData<Transform, [[f32; 4]; 4]>,
+    pub indices: BufferData<u16>,
+    pub transforms: BufferData<Transform, [[f32; 4]; 4]>,
     pub(crate) material: Arc<Material>,
 }
 
@@ -33,7 +33,11 @@ impl Model {
             });
 
         let indices = BufferData::new(data, indices, wgpu::BufferUsages::INDEX);
-        let transforms = BufferData::new(data, transforms, wgpu::BufferUsages::VERTEX);
+        let transforms = BufferData::new(
+            data,
+            transforms,
+            wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
+        );
 
         Self {
             vertex_buffer,
