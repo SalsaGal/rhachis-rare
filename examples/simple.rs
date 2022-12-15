@@ -8,8 +8,9 @@ use renderer::{
     Renderer,
 };
 use rhachis::{
+    input::{InputState, Key},
     renderers::{Texture, Transform},
-    *, input::{Key, InputState},
+    *,
 };
 
 #[rhachis::run]
