@@ -1,14 +1,16 @@
 pub mod material;
 pub mod model;
 
-use material::{Material, MaterialManager};
+use std::sync::Arc;
+
+use material::Material;
 use model::{Model, TextureVertex};
 use rhachis::{renderers::Transform, GameData, IdMap};
 use wgpu::RenderPipeline;
 
 pub struct Renderer {
     pub models: IdMap<Model>,
-    pub materials: MaterialManager,
+    pub error_material: Arc<Material>,
     unshaded_pipeline: RenderPipeline,
 }
 
@@ -71,7 +73,7 @@ impl Renderer {
 
         Self {
             models: IdMap::new(),
-            materials: MaterialManager::new(data),
+            error_material: Arc::new(Material::error(data)),
             unshaded_pipeline,
         }
     }

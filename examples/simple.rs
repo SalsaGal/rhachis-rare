@@ -1,6 +1,8 @@
+use std::sync::Arc;
+
 use renderer::{
     model::{Model, TextureVertex},
-    Renderer,
+    Renderer, material::Material,
 };
 use rhachis::{renderers::Transform, *};
 
@@ -12,6 +14,7 @@ struct Simple {
 impl Game for Simple {
     fn init(data: &GameData) -> Self {
         let mut renderer = Renderer::new(data);
+        let material = Arc::new(Material::error(data));
         renderer.models.push(Model::new(
             data,
             vec![
@@ -29,7 +32,7 @@ impl Game for Simple {
                 },
             ],
             vec![0, 1, 2],
-            renderer.materials.error_mat.clone(),
+            material,
             vec![Transform::scale((1.0, 0.5, 1.0))],
         ));
 
