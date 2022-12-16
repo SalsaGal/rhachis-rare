@@ -2,9 +2,10 @@ pub mod camera;
 pub mod material;
 pub mod model;
 
-use std::sync::Arc;
+use std::{sync::Arc, path::Path};
 
 use camera::Camera;
+use easy_gltf::model::Mode;
 use glam::Mat4;
 use material::Material;
 use model::{Model, TextureVertex};
@@ -110,6 +111,25 @@ impl Renderer {
             camera_bind_group,
             unshaded_pipeline,
         }
+    }
+
+    pub fn load_gltf<P: AsRef<Path>>(&mut self, data: &GameData, path: P, scene: usize) {
+        let scene = &easy_gltf::load(path).unwrap()[scene];
+        self.models.append(scene.models.iter().map(|model| {
+            let vertices = model.vertices().iter().map(|vertex| {
+                TextureVertex {
+                    pos: vertex.position.into(),
+                    tex_coords: vertex.tex_coords.into(),
+                }
+            }).collect();
+            let indices = model.indices().unwrap().iter().map(|index| *index as u16).collect();
+            Model::new(data, vertices, indices, todo!(), vec![])
+        }).collect());
+    }
+
+    pub fn with_gltf<P: AsRef<Path>>(mut self, data: &GameData, path: P, scene: usize) -> Self {
+        self.load_gltf(data, path, scene);
+        self
     }
 }
 
