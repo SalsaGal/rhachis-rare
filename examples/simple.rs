@@ -1,7 +1,7 @@
 use std::{f32::consts::TAU, sync::Arc};
 
 use glam::Vec3;
-use renderer::{
+use rare::{
     camera::{Camera, CameraType},
     material::Material,
     model::{Model, TextureVertex},
