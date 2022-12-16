@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 bytemuck = { version = "1.12.1", features = ["derive"] }
+easy-gltf = "0.1.5"
 glam = "0.22"
 image = "0.24.5"
 rhachis = { git = "https://github.com/SalsaGal/rhachis" }

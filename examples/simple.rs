@@ -20,15 +20,13 @@ struct Simple {
 
 impl Game for Simple {
     fn init(data: &GameData) -> Self {
-        let mut renderer = Renderer::new(
-            data,
-            Camera {
-                pos: Vec3::Z,
-                ty: CameraType::LookAt(Vec3::ZERO),
-                fov: TAU / 4.0,
-                aspect: data.get_window_size().x as f32 / data.get_window_size().y as f32,
-            },
-        );
+        let mut renderer = Renderer::new(data);
+        renderer.camera[0] = Camera {
+            pos: Vec3::Z,
+            ty: CameraType::LookAt(Vec3::ZERO),
+            fov: TAU / 4.0,
+            aspect: data.get_window_size().x as f32 / data.get_window_size().y as f32,
+        };
         let material = Arc::new(Material {
             color: Texture::from_path(data, "examples/test.png", &graphics::SamplerType::Linear)
                 .unwrap(),

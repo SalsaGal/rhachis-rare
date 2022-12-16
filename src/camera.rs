@@ -1,6 +1,6 @@
 use glam::{Mat4, Vec3};
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Default)]
 pub struct Camera {
     pub pos: Vec3,
     pub ty: CameraType,
@@ -23,4 +23,10 @@ impl From<Camera> for [[f32; 4]; 4] {
 pub enum CameraType {
     LookAt(Vec3),
     LookTo(Vec3),
+}
+
+impl Default for CameraType {
+    fn default() -> Self {
+        Self::LookTo(Vec3::NEG_Z)
+    }
 }

@@ -24,7 +24,7 @@ pub struct Renderer {
 }
 
 impl Renderer {
-    pub fn new(data: &GameData, camera: Camera) -> Self {
+    pub fn new(data: &GameData) -> Self {
         let debug_shader =
             data.graphics
                 .device
@@ -85,7 +85,7 @@ impl Renderer {
 
         let camera = BufferData::new(
             data,
-            vec![camera],
+            vec![Camera::default()],
             wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
         );
 
