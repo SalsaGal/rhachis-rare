@@ -14,7 +14,7 @@ impl From<Camera> for [[f32; 4]; 4] {
             CameraType::LookAt(center) => Mat4::look_at_rh(cam.pos, center, Vec3::Y),
             CameraType::LookTo(dir) => Mat4::look_to_rh(cam.pos, dir, Vec3::Y),
         };
-        let proj = Mat4::perspective_infinite_rh(cam.fov, cam.aspect, f32::EPSILON);
+        let proj = Mat4::perspective_infinite_rh(cam.fov, cam.aspect, 0.1);
         (proj * view).to_cols_array_2d()
     }
 }

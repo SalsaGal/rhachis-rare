@@ -5,7 +5,7 @@ use rare::{
     camera::{Camera, CameraType},
     material::Material,
     model::{Model, TextureVertex},
-    Renderer, Pipeline,
+    Renderer,
 };
 use rhachis::{
     input::{InputState, Key},
