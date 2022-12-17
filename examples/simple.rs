@@ -5,7 +5,7 @@ use rare::{
     camera::{Camera, CameraType},
     material::Material,
     model::{Model, TextureVertex},
-    Pipeline, Renderer,
+    Renderer, Pipeline,
 };
 use rhachis::{
     input::{InputState, Key},
@@ -21,6 +21,7 @@ struct Simple {
 impl Game for Simple {
     fn init(data: &GameData) -> Self {
         let mut renderer = Renderer::new(data);
+        renderer.pipeline = Pipeline::Wireframe;
         renderer.camera[0] = Camera {
             pos: Vec3::Z,
             ty: CameraType::LookAt(Vec3::ZERO),

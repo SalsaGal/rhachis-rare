@@ -202,7 +202,10 @@ impl Renderer {
                         .iter()
                         .map(|index| *index as u16)
                         .collect();
-                    let material = self.error_material.clone();
+                    let material = Arc::new(Material {
+                        color: Texture::from_path(data, "examples/test.png", &SamplerType::Linear)
+                            .unwrap(),
+                    });
                     Model::new(
                         data,
                         vertices,
@@ -268,7 +271,11 @@ impl rhachis::graphics::Renderer for Renderer {
         view: &'a wgpu::TextureView,
         encoder: &'a mut wgpu::CommandEncoder,
     ) -> wgpu::RenderPass {
-        SimpleRenderer::render_pass(view, encoder, Some(&self.depth_texture.view))
+        let depth_texture = match self.pipeline {
+            Pipeline::Wireframe => None,
+            _ => Some(&self.depth_texture.view),
+        };
+        SimpleRenderer::render_pass(view, encoder, depth_texture)
     }
 
     fn update(&mut self, data: &GameData) {
