@@ -19,7 +19,7 @@ struct Transform {
 var<uniform> camera: Transform;
 
 @vertex
-fn unshaded_vertex(in: VertexInput, transform: Transform) -> VertexOutput {
+fn texture_vertex(in: VertexInput, transform: Transform) -> VertexOutput {
     let transform_matrix = mat4x4<f32>(
         transform.data0,
         transform.data1,
@@ -45,6 +45,6 @@ var color_texture: texture_2d<f32>;
 var color_texture_sampler: sampler;
 
 @fragment
-fn unshaded_fragment(in: VertexOutput) -> @location(0) vec4<f32> {
+fn texture_fragment(in: VertexOutput) -> @location(0) vec4<f32> {
     return textureSample(color_texture, color_texture_sampler, in.tex_coords);
 }

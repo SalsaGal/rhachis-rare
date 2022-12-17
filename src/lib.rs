@@ -2,10 +2,9 @@ pub mod camera;
 pub mod material;
 pub mod model;
 
-use std::{sync::Arc, path::Path};
+use std::{path::Path, sync::Arc};
 
 use camera::Camera;
-use easy_gltf::model::Mode;
 use glam::Mat4;
 use material::Material;
 use model::{Model, TextureVertex};
@@ -20,8 +19,9 @@ pub struct Renderer {
     pub models: IdMap<Model>,
     pub error_material: Arc<Material>,
     pub camera: BufferData<Camera, [[f32; 4]; 4]>,
+    pub pipeline: Pipeline,
     camera_bind_group: BindGroup,
-    unshaded_pipeline: RenderPipeline,
+    texture_pipeline: RenderPipeline,
 }
 
 impl Renderer {
@@ -34,7 +34,7 @@ impl Renderer {
                     source: wgpu::ShaderSource::Wgsl(include_str!("debug.wgsl").into()),
                 });
 
-        let unshaded_pipeline_layout =
+        let texture_pipeline_layout =
             data.graphics
                 .device
                 .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
@@ -46,15 +46,15 @@ impl Renderer {
                     push_constant_ranges: &[],
                 });
 
-        let unshaded_pipeline =
+        let texture_pipeline =
             data.graphics
                 .device
                 .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-                    label: Some("unshaded_pipeline"),
-                    layout: Some(&unshaded_pipeline_layout),
+                    label: Some("texture_pipeline"),
+                    layout: Some(&texture_pipeline_layout),
                     vertex: wgpu::VertexState {
                         module: &debug_shader,
-                        entry_point: "unshaded_vertex",
+                        entry_point: "texture_vertex",
                         buffers: &[TextureVertex::desc(), Transform::desc()],
                     },
                     primitive: wgpu::PrimitiveState {
@@ -73,7 +73,7 @@ impl Renderer {
                         alpha_to_coverage_enabled: false,
                     },
                     fragment: Some(wgpu::FragmentState {
-                        entry_point: "unshaded_fragment",
+                        entry_point: "texture_fragment",
                         module: &debug_shader,
                         targets: &[Some(wgpu::ColorTargetState {
                             format: data.graphics.config.format,
@@ -108,23 +108,37 @@ impl Renderer {
             models: IdMap::new(),
             error_material: Arc::new(Material::error(data)),
             camera,
+            pipeline: Pipeline::Texture,
             camera_bind_group,
-            unshaded_pipeline,
+            texture_pipeline,
         }
     }
 
     pub fn load_gltf<P: AsRef<Path>>(&mut self, data: &GameData, path: P, scene: usize) {
         let scene = &easy_gltf::load(path).unwrap()[scene];
-        self.models.append(scene.models.iter().map(|model| {
-            let vertices = model.vertices().iter().map(|vertex| {
-                TextureVertex {
-                    pos: vertex.position.into(),
-                    tex_coords: vertex.tex_coords.into(),
-                }
-            }).collect();
-            let indices = model.indices().unwrap().iter().map(|index| *index as u16).collect();
-            Model::new(data, vertices, indices, todo!(), vec![])
-        }).collect());
+        self.models.append(
+            scene
+                .models
+                .iter()
+                .map(|model| {
+                    let vertices = model
+                        .vertices()
+                        .iter()
+                        .map(|vertex| TextureVertex {
+                            pos: vertex.position.into(),
+                            tex_coords: vertex.tex_coords.into(),
+                        })
+                        .collect();
+                    let indices = model
+                        .indices()
+                        .unwrap()
+                        .iter()
+                        .map(|index| *index as u16)
+                        .collect();
+                    Model::new(data, vertices, indices, todo!(), vec![])
+                })
+                .collect(),
+        );
     }
 
     pub fn with_gltf<P: AsRef<Path>>(mut self, data: &GameData, path: P, scene: usize) -> Self {
@@ -135,14 +149,22 @@ impl Renderer {
 
 impl rhachis::graphics::Renderer for Renderer {
     fn render<'a, 'b: 'a>(&'b self, render_pass: &'a mut wgpu::RenderPass<'b>) {
-        render_pass.set_pipeline(&self.unshaded_pipeline);
-        for model in &self.models {
-            render_pass.set_vertex_buffer(0, model.vertex_buffer.slice(..));
-            render_pass.set_vertex_buffer(1, model.transforms.buffer.slice(..));
-            render_pass.set_index_buffer(model.indices.buffer.slice(..), wgpu::IndexFormat::Uint16);
-            render_pass.set_bind_group(0, &model.material.color.bind_group, &[]);
-            render_pass.set_bind_group(1, &self.camera_bind_group, &[]);
-            render_pass.draw_indexed(0..model.indices.buffer_len, 0, 0..1);
+        match self.pipeline {
+            Pipeline::Texture => {
+                render_pass.set_pipeline(&self.texture_pipeline);
+                for model in &self.models {
+                    render_pass.set_vertex_buffer(0, model.vertex_buffer.slice(..));
+                    render_pass.set_vertex_buffer(1, model.transforms.buffer.slice(..));
+                    render_pass.set_index_buffer(
+                        model.indices.buffer.slice(..),
+                        wgpu::IndexFormat::Uint16,
+                    );
+                    render_pass.set_bind_group(0, &model.material.color.bind_group, &[]);
+                    render_pass.set_bind_group(1, &self.camera_bind_group, &[]);
+                    render_pass.draw_indexed(0..model.indices.buffer_len, 0, 0..1);
+                }
+            }
+            _ => todo!(),
         }
     }
 
@@ -151,4 +173,11 @@ impl rhachis::graphics::Renderer for Renderer {
             model.transforms.update(data);
         }
     }
+}
+
+pub enum Pipeline {
+    Normal,
+    Texture,
+    Wireframe,
+    Color,
 }
