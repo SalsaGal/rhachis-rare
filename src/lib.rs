@@ -5,7 +5,7 @@ pub mod model;
 use std::{path::Path, sync::Arc};
 
 use camera::Camera;
-use glam::{Mat4, UVec2};
+use glam::Mat4;
 use material::Material;
 use model::{Model, TextureVertex};
 use rhachis::{
@@ -28,7 +28,7 @@ pub struct Renderer {
 
 impl Renderer {
     pub fn new(data: &GameData) -> Self {
-        let depth_texture = Self::depth_texture(data, data.get_window_size());
+        let depth_texture = Texture::depth_texture(data, data.get_window_size());
 
         let debug_shader =
             data.graphics
@@ -222,16 +222,6 @@ impl Renderer {
         self.load_gltf(data, path, scene);
         self
     }
-    
-    fn depth_texture(data: &GameData, size: UVec2) -> Texture {
-        Texture::new(
-            data,
-            size,
-            &SamplerType::Nearest,
-            wgpu::TextureFormat::Depth32Float,
-            wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::TEXTURE_BINDING,
-        )
-    }
 
     pub const FEATURES: wgpu::Features = wgpu::Features::POLYGON_MODE_LINE;
 }
@@ -285,7 +275,7 @@ impl rhachis::graphics::Renderer for Renderer {
     }
 
     fn resize(&mut self, data: &GameData, size: glam::UVec2) {
-        self.depth_texture = Self::depth_texture(data, size);
+        self.depth_texture = Texture::depth_texture(data, size);
     }
 }
 

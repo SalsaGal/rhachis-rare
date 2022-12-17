@@ -4,3 +4,7 @@ cargo run --example simple
 [check]
 cargo clippy --examples -- -D warnings
 cargo fmt
+
+[update]
+cargo update -p rhachis
+cargo clean -p rhachis
