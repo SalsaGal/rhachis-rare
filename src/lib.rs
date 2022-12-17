@@ -22,6 +22,7 @@ pub struct Renderer {
     pub pipeline: Pipeline,
     camera_bind_group: BindGroup,
     texture_pipeline: RenderPipeline,
+    wireframe_pipeline: RenderPipeline,
 }
 
 impl Renderer {
@@ -84,6 +85,56 @@ impl Renderer {
                     multiview: None,
                 });
 
+        let wireframe_pipeline_layout =
+            data.graphics
+                .device
+                .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+                    label: None,
+                    bind_group_layouts: &[
+                        &Material::bind_group_layout(data),
+                        &Transform::bind_group_layout(data),
+                    ],
+                    push_constant_ranges: &[],
+                });
+
+        let wireframe_pipeline =
+            data.graphics
+                .device
+                .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+                    label: Some("wireframe_pipeline"),
+                    layout: Some(&wireframe_pipeline_layout),
+                    vertex: wgpu::VertexState {
+                        module: &debug_shader,
+                        entry_point: "texture_vertex",
+                        buffers: &[TextureVertex::desc(), Transform::desc()],
+                    },
+                    primitive: wgpu::PrimitiveState {
+                        topology: wgpu::PrimitiveTopology::TriangleList,
+                        strip_index_format: None,
+                        front_face: wgpu::FrontFace::Ccw,
+                        cull_mode: Some(wgpu::Face::Back),
+                        unclipped_depth: false,
+                        polygon_mode: wgpu::PolygonMode::Line,
+                        conservative: false,
+                    },
+                    depth_stencil: None,
+                    multisample: wgpu::MultisampleState {
+                        count: 1,
+                        mask: !0,
+                        alpha_to_coverage_enabled: false,
+                    },
+                    fragment: Some(wgpu::FragmentState {
+                        entry_point: "texture_fragment",
+                        module: &debug_shader,
+                        targets: &[Some(wgpu::ColorTargetState {
+                            format: data.graphics.config.format,
+                            blend: Some(wgpu::BlendState::ALPHA_BLENDING),
+                            write_mask: wgpu::ColorWrites::ALL,
+                        })],
+                    }),
+                    multiview: None,
+                });
+
         let camera = BufferData::new(
             data,
             vec![Camera::default()],
@@ -111,6 +162,7 @@ impl Renderer {
             pipeline: Pipeline::Texture,
             camera_bind_group,
             texture_pipeline,
+            wireframe_pipeline,
         }
     }
 
@@ -145,6 +197,8 @@ impl Renderer {
         self.load_gltf(data, path, scene);
         self
     }
+
+    pub const FEATURES: wgpu::Features = wgpu::Features::POLYGON_MODE_LINE;
 }
 
 impl rhachis::graphics::Renderer for Renderer {
@@ -152,6 +206,20 @@ impl rhachis::graphics::Renderer for Renderer {
         match self.pipeline {
             Pipeline::Texture => {
                 render_pass.set_pipeline(&self.texture_pipeline);
+                for model in &self.models {
+                    render_pass.set_vertex_buffer(0, model.vertex_buffer.slice(..));
+                    render_pass.set_vertex_buffer(1, model.transforms.buffer.slice(..));
+                    render_pass.set_index_buffer(
+                        model.indices.buffer.slice(..),
+                        wgpu::IndexFormat::Uint16,
+                    );
+                    render_pass.set_bind_group(0, &model.material.color.bind_group, &[]);
+                    render_pass.set_bind_group(1, &self.camera_bind_group, &[]);
+                    render_pass.draw_indexed(0..model.indices.buffer_len, 0, 0..1);
+                }
+            }
+            Pipeline::Wireframe => {
+                render_pass.set_pipeline(&self.wireframe_pipeline);
                 for model in &self.models {
                     render_pass.set_vertex_buffer(0, model.vertex_buffer.slice(..));
                     render_pass.set_vertex_buffer(1, model.transforms.buffer.slice(..));
