@@ -112,7 +112,7 @@ impl Renderer {
                         topology: wgpu::PrimitiveTopology::TriangleList,
                         strip_index_format: None,
                         front_face: wgpu::FrontFace::Ccw,
-                        cull_mode: Some(wgpu::Face::Back),
+                        cull_mode: None,
                         unclipped_depth: false,
                         polygon_mode: wgpu::PolygonMode::Line,
                         conservative: false,
@@ -166,7 +166,7 @@ impl Renderer {
         }
     }
 
-    pub fn load_gltf<P: AsRef<Path>>(&mut self, data: &GameData, path: P, scene: usize) {
+    pub fn load_gltf<P: AsRef<Path>>(&mut self, data: &GameData, path: P, scene: usize) -> Vec<usize> {
         let scene = &easy_gltf::load(path).unwrap()[scene];
         self.models.append(
             scene
@@ -187,10 +187,11 @@ impl Renderer {
                         .iter()
                         .map(|index| *index as u16)
                         .collect();
-                    Model::new(data, vertices, indices, todo!(), vec![])
+                    let material = self.error_material.clone();
+                    Model::new(data, vertices, indices, material, vec![Transform::default()])
                 })
                 .collect(),
-        );
+        )
     }
 
     pub fn with_gltf<P: AsRef<Path>>(mut self, data: &GameData, path: P, scene: usize) -> Self {

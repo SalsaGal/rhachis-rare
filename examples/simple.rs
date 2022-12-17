@@ -50,15 +50,16 @@ impl Game for Simple {
             ],
             vec![0, 1, 2],
             material,
-            vec![Transform::default()],
+            vec![Transform::translation([1.0, 0.0, 0.0])],
         ));
+        renderer.load_gltf(data, "examples/monkey.gltf", 0);
 
         Self { renderer }
     }
 
     fn update(&mut self, data: &GameData) {
         let x = f32::sin(data.start_time.elapsed().as_secs_f32()).abs();
-        self.renderer.models[0].transforms[0] = Transform::scale((1.0, x, 1.0));
+        self.renderer.models[0].transforms[0].scale.y = x;
 
         if data.input.is_key(Key::Right, InputState::Down) {
             self.renderer.camera[0].pos.x += 1.0 * data.delta_time.as_secs_f32();
