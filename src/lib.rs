@@ -5,12 +5,12 @@ pub mod model;
 use std::{path::Path, sync::Arc};
 
 use camera::Camera;
-use glam::Mat4;
+use glam::{Mat4, UVec2};
 use material::Material;
 use model::{Model, TextureVertex};
 use rhachis::{
-    graphics::{Bindable, BufferData},
-    renderers::Transform,
+    graphics::{Bindable, BufferData, SamplerType},
+    renderers::{SimpleRenderer, Texture, Transform},
     GameData, IdMap,
 };
 use wgpu::{BindGroup, RenderPipeline};
@@ -20,6 +20,7 @@ pub struct Renderer {
     pub error_material: Arc<Material>,
     pub camera: BufferData<Camera, [[f32; 4]; 4]>,
     pub pipeline: Pipeline,
+    depth_texture: Texture,
     camera_bind_group: BindGroup,
     texture_pipeline: RenderPipeline,
     wireframe_pipeline: RenderPipeline,
@@ -27,6 +28,8 @@ pub struct Renderer {
 
 impl Renderer {
     pub fn new(data: &GameData) -> Self {
+        let depth_texture = Self::depth_texture(data, data.get_window_size());
+
         let debug_shader =
             data.graphics
                 .device
@@ -67,7 +70,13 @@ impl Renderer {
                         polygon_mode: wgpu::PolygonMode::Fill,
                         conservative: false,
                     },
-                    depth_stencil: None,
+                    depth_stencil: Some(wgpu::DepthStencilState {
+                        format: wgpu::TextureFormat::Depth32Float,
+                        depth_write_enabled: true,
+                        depth_compare: wgpu::CompareFunction::Less,
+                        stencil: wgpu::StencilState::default(),
+                        bias: wgpu::DepthBiasState::default(),
+                    }),
                     multisample: wgpu::MultisampleState {
                         count: 1,
                         mask: !0,
@@ -160,13 +169,19 @@ impl Renderer {
             error_material: Arc::new(Material::error(data)),
             camera,
             pipeline: Pipeline::Texture,
+            depth_texture,
             camera_bind_group,
             texture_pipeline,
             wireframe_pipeline,
         }
     }
 
-    pub fn load_gltf<P: AsRef<Path>>(&mut self, data: &GameData, path: P, scene: usize) -> Vec<usize> {
+    pub fn load_gltf<P: AsRef<Path>>(
+        &mut self,
+        data: &GameData,
+        path: P,
+        scene: usize,
+    ) -> Vec<usize> {
         let scene = &easy_gltf::load(path).unwrap()[scene];
         self.models.append(
             scene
@@ -188,7 +203,13 @@ impl Renderer {
                         .map(|index| *index as u16)
                         .collect();
                     let material = self.error_material.clone();
-                    Model::new(data, vertices, indices, material, vec![Transform::default()])
+                    Model::new(
+                        data,
+                        vertices,
+                        indices,
+                        material,
+                        vec![Transform::default()],
+                    )
                 })
                 .collect(),
         )
@@ -197,6 +218,16 @@ impl Renderer {
     pub fn with_gltf<P: AsRef<Path>>(mut self, data: &GameData, path: P, scene: usize) -> Self {
         self.load_gltf(data, path, scene);
         self
+    }
+    
+    fn depth_texture(data: &GameData, size: UVec2) -> Texture {
+        Texture::new(
+            data,
+            size,
+            &SamplerType::Nearest,
+            wgpu::TextureFormat::Depth32Float,
+            wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::TEXTURE_BINDING,
+        )
     }
 
     pub const FEATURES: wgpu::Features = wgpu::Features::POLYGON_MODE_LINE;
@@ -232,10 +263,22 @@ impl rhachis::graphics::Renderer for Renderer {
         }
     }
 
+    fn make_render_pass<'a>(
+        &'a self,
+        view: &'a wgpu::TextureView,
+        encoder: &'a mut wgpu::CommandEncoder,
+    ) -> wgpu::RenderPass {
+        SimpleRenderer::render_pass(view, encoder, Some(&self.depth_texture.view))
+    }
+
     fn update(&mut self, data: &GameData) {
         for model in &mut self.models {
             model.transforms.update(data);
         }
+    }
+
+    fn resize(&mut self, data: &GameData, size: glam::UVec2) {
+        self.depth_texture = Self::depth_texture(data, size);
     }
 }
 

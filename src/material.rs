@@ -10,7 +10,7 @@ impl Material {
         let error_image = image::load_from_memory(include_bytes!("error.png")).unwrap();
 
         Self {
-            color: Texture::new(
+            color: Texture::from_image(
                 data,
                 error_image.as_rgba8().unwrap(),
                 &rhachis::graphics::SamplerType::Nearest,
