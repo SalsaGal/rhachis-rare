@@ -203,34 +203,29 @@ impl Renderer {
 
 impl rhachis::graphics::Renderer for Renderer {
     fn render<'a, 'b: 'a>(&'b self, render_pass: &'a mut wgpu::RenderPass<'b>) {
+        macro_rules! default_render_routine {
+            () => {
+                for model in &self.models {
+                    render_pass.set_vertex_buffer(0, model.vertex_buffer.slice(..));
+                    render_pass.set_vertex_buffer(1, model.transforms.buffer.slice(..));
+                    render_pass.set_index_buffer(
+                        model.indices.buffer.slice(..),
+                        wgpu::IndexFormat::Uint16,
+                    );
+                    render_pass.set_bind_group(0, &model.material.color.bind_group, &[]);
+                    render_pass.set_bind_group(1, &self.camera_bind_group, &[]);
+                    render_pass.draw_indexed(0..model.indices.buffer_len, 0, 0..1);
+                }
+            };
+        }
         match self.pipeline {
             Pipeline::Texture => {
                 render_pass.set_pipeline(&self.texture_pipeline);
-                for model in &self.models {
-                    render_pass.set_vertex_buffer(0, model.vertex_buffer.slice(..));
-                    render_pass.set_vertex_buffer(1, model.transforms.buffer.slice(..));
-                    render_pass.set_index_buffer(
-                        model.indices.buffer.slice(..),
-                        wgpu::IndexFormat::Uint16,
-                    );
-                    render_pass.set_bind_group(0, &model.material.color.bind_group, &[]);
-                    render_pass.set_bind_group(1, &self.camera_bind_group, &[]);
-                    render_pass.draw_indexed(0..model.indices.buffer_len, 0, 0..1);
-                }
+                default_render_routine!();
             }
             Pipeline::Wireframe => {
                 render_pass.set_pipeline(&self.wireframe_pipeline);
-                for model in &self.models {
-                    render_pass.set_vertex_buffer(0, model.vertex_buffer.slice(..));
-                    render_pass.set_vertex_buffer(1, model.transforms.buffer.slice(..));
-                    render_pass.set_index_buffer(
-                        model.indices.buffer.slice(..),
-                        wgpu::IndexFormat::Uint16,
-                    );
-                    render_pass.set_bind_group(0, &model.material.color.bind_group, &[]);
-                    render_pass.set_bind_group(1, &self.camera_bind_group, &[]);
-                    render_pass.draw_indexed(0..model.indices.buffer_len, 0, 0..1);
-                }
+                default_render_routine!();
             }
             _ => todo!(),
         }
