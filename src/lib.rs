@@ -1,11 +1,13 @@
 pub mod camera;
+pub mod light;
 pub mod material;
 pub mod model;
 
 use std::{path::Path, sync::Arc};
 
 use camera::Camera;
-use glam::Mat4;
+use glam::{Mat4, Vec3};
+use light::{Light, LightUniform};
 use material::Material;
 use model::{Model, TextureVertex};
 use rhachis::{
@@ -19,11 +21,14 @@ pub struct Renderer {
     pub models: IdMap<Model>,
     pub error_material: Arc<Material>,
     pub camera: BufferData<Camera, [[f32; 4]; 4]>,
+    pub lights: BufferData<Light, LightUniform>,
     pub pipeline: Pipeline,
     depth_texture: Texture,
     camera_bind_group: BindGroup,
+    lights_bind_group: BindGroup,
     texture_pipeline: RenderPipeline,
     wireframe_pipeline: RenderPipeline,
+    render_pipeline: RenderPipeline,
 }
 
 impl Renderer {
@@ -37,6 +42,14 @@ impl Renderer {
                     label: Some("debug.wgsl"),
                     source: wgpu::ShaderSource::Wgsl(include_str!("debug.wgsl").into()),
                 });
+
+        let shader = data
+            .graphics
+            .device
+            .create_shader_module(wgpu::ShaderModuleDescriptor {
+                label: Some("shader.wgsl"),
+                source: wgpu::ShaderSource::Wgsl(include_str!("shader.wgsl").into()),
+            });
 
         let texture_pipeline_layout =
             data.graphics
@@ -144,6 +157,62 @@ impl Renderer {
                     multiview: None,
                 });
 
+        let render_pipeline_layout =
+            data.graphics
+                .device
+                .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+                    label: None,
+                    bind_group_layouts: &[
+                        &Material::bind_group_layout(data),
+                        &Transform::bind_group_layout(data),
+                    ],
+                    push_constant_ranges: &[],
+                });
+
+        let render_pipeline =
+            data.graphics
+                .device
+                .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+                    label: Some("render_pipeline"),
+                    layout: Some(&render_pipeline_layout),
+                    vertex: wgpu::VertexState {
+                        module: &shader,
+                        entry_point: "vertex_main",
+                        buffers: &[TextureVertex::desc(), Transform::desc()],
+                    },
+                    primitive: wgpu::PrimitiveState {
+                        topology: wgpu::PrimitiveTopology::TriangleList,
+                        strip_index_format: None,
+                        front_face: wgpu::FrontFace::Ccw,
+                        cull_mode: None,
+                        unclipped_depth: false,
+                        polygon_mode: wgpu::PolygonMode::Fill,
+                        conservative: false,
+                    },
+                    depth_stencil: Some(wgpu::DepthStencilState {
+                        format: wgpu::TextureFormat::Depth32Float,
+                        depth_write_enabled: true,
+                        depth_compare: wgpu::CompareFunction::Less,
+                        stencil: wgpu::StencilState::default(),
+                        bias: wgpu::DepthBiasState::default(),
+                    }),
+                    multisample: wgpu::MultisampleState {
+                        count: 1,
+                        mask: !0,
+                        alpha_to_coverage_enabled: false,
+                    },
+                    fragment: Some(wgpu::FragmentState {
+                        entry_point: "fragment_main",
+                        module: &shader,
+                        targets: &[Some(wgpu::ColorTargetState {
+                            format: data.graphics.config.format,
+                            blend: Some(wgpu::BlendState::ALPHA_BLENDING),
+                            write_mask: wgpu::ColorWrites::ALL,
+                        })],
+                    }),
+                    multiview: None,
+                });
+
         let camera = BufferData::new(
             data,
             vec![Camera::default()],
@@ -164,15 +233,40 @@ impl Renderer {
                     }],
                 });
 
+        let lights = BufferData::new(
+            data,
+            vec![Light {
+                pos: Vec3::new(3.0, 0.0, 2.0),
+            }],
+            wgpu::BufferUsages::UNIFORM,
+        );
+
+        let lights_bind_group =
+            data.graphics
+                .device
+                .create_bind_group(&wgpu::BindGroupDescriptor {
+                    label: None,
+                    layout: &LightUniform::bind_group_layout(data),
+                    entries: &[wgpu::BindGroupEntry {
+                        binding: 0,
+                        resource: wgpu::BindingResource::Buffer(
+                            lights.buffer.as_entire_buffer_binding(),
+                        ),
+                    }],
+                });
+
         Self {
             models: IdMap::new(),
             error_material: Arc::new(Material::error(data)),
             camera,
-            pipeline: Pipeline::Texture,
+            lights,
+            pipeline: Pipeline::Normal,
             depth_texture,
             camera_bind_group,
+            lights_bind_group,
             texture_pipeline,
             wireframe_pipeline,
+            render_pipeline,
         }
     }
 
@@ -244,6 +338,10 @@ impl rhachis::graphics::Renderer for Renderer {
             };
         }
         match self.pipeline {
+            Pipeline::Normal => {
+                render_pass.set_pipeline(&self.render_pipeline);
+                default_render_routine!();
+            }
             Pipeline::Texture => {
                 render_pass.set_pipeline(&self.texture_pipeline);
                 default_render_routine!();
