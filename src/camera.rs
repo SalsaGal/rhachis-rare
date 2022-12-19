@@ -1,4 +1,5 @@
 use glam::{Mat4, Vec3};
+use rhachis::GameData;
 
 #[derive(Clone, Copy, Debug, Default)]
 pub struct Camera {
@@ -6,6 +7,12 @@ pub struct Camera {
     pub ty: CameraType,
     pub fov: f32,
     pub aspect: f32,
+}
+
+impl Camera {
+    pub fn update_aspect(&mut self, data: &GameData) {
+        self.aspect = data.get_window_size().x as f32 / data.get_window_size().y as f32;
+    }
 }
 
 impl From<Camera> for [[f32; 4]; 4] {

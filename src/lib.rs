@@ -367,6 +367,7 @@ impl rhachis::graphics::Renderer for Renderer {
     }
 
     fn update(&mut self, data: &GameData) {
+        self.camera.values[0].update_aspect(data);
         for model in &mut self.models {
             model.transforms.update(data);
         }
