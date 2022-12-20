@@ -44,6 +44,17 @@ var color_texture: texture_2d<f32>;
 @group(0)@binding(1)
 var color_texture_sampler: sampler;
 
+struct Light {
+    color: vec3<f32>
+}
+
+struct LightArray {
+    lights: array<Light>
+}
+
+@group(2)@binding(0)
+var<storage> light: LightArray;
+
 @fragment
 fn fragment_main(in: VertexOutput) -> @location(0) vec4<f32> {
     return textureSample(color_texture, color_texture_sampler, in.tex_coords);

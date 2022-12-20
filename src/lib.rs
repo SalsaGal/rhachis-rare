@@ -165,6 +165,7 @@ impl Renderer {
                     bind_group_layouts: &[
                         &Material::bind_group_layout(data),
                         &Transform::bind_group_layout(data),
+                        &LightUniform::bind_group_layout(data),
                     ],
                     push_constant_ranges: &[],
                 });
@@ -238,7 +239,7 @@ impl Renderer {
             vec![Light {
                 pos: Vec3::new(3.0, 0.0, 2.0),
             }],
-            wgpu::BufferUsages::UNIFORM,
+            wgpu::BufferUsages::STORAGE,
         );
 
         let lights_bind_group =
@@ -340,6 +341,7 @@ impl rhachis::graphics::Renderer for Renderer {
         match self.pipeline {
             Pipeline::Normal => {
                 render_pass.set_pipeline(&self.render_pipeline);
+                render_pass.set_bind_group(2, &self.lights_bind_group, &[]);
                 default_render_routine!();
             }
             Pipeline::Texture => {
