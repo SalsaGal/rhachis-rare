@@ -11,7 +11,7 @@ use crate::material::Material;
 pub struct Model {
     pub(crate) vertex_buffer: Buffer,
     pub indices: BufferData<u16>,
-    pub transforms: BufferData<Transform, [[f32; 4]; 4]>,
+    pub transforms: BufferData<Transform>,
     pub material: Arc<Material>,
 }
 

@@ -1,15 +1,22 @@
 use glam::Vec3;
-use rhachis::graphics::Bindable;
+use rhachis::graphics::{Bindable, BufferCompatible};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Light {
     pub pos: Vec3,
 }
 
+impl BufferCompatible for Light {
+    type PodFormat = LightUniform;
+    fn into_pod(self) -> Self::PodFormat {
+        self.into()
+    }
+}
+
 #[repr(C)]
 #[derive(Clone, Copy, Debug, bytemuck::Pod, bytemuck::Zeroable)]
 pub struct LightUniform {
-    pub pos: [f32; 3],
+    pub pos: [f32; 4],
 }
 
 impl Bindable for LightUniform {
@@ -35,7 +42,7 @@ impl Bindable for LightUniform {
 impl From<Light> for LightUniform {
     fn from(value: Light) -> Self {
         LightUniform {
-            pos: value.pos.to_array(),
+            pos: value.pos.extend(1.0).to_array(),
         }
     }
 }

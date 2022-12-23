@@ -1,5 +1,5 @@
 use glam::{Mat4, Vec3};
-use rhachis::GameData;
+use rhachis::{graphics::BufferCompatible, GameData};
 
 #[derive(Clone, Copy, Debug, Default)]
 pub struct Camera {
@@ -12,6 +12,13 @@ pub struct Camera {
 impl Camera {
     pub fn update_aspect(&mut self, data: &GameData) {
         self.aspect = data.get_window_size().x as f32 / data.get_window_size().y as f32;
+    }
+}
+
+impl BufferCompatible for Camera {
+    type PodFormat = [[f32; 4]; 4];
+    fn into_pod(self) -> Self::PodFormat {
+        self.into()
     }
 }
 

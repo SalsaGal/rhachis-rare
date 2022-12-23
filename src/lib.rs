@@ -20,8 +20,8 @@ use wgpu::{BindGroup, RenderPipeline};
 pub struct Renderer {
     pub models: IdMap<Model>,
     pub error_material: Arc<Material>,
-    pub camera: BufferData<Camera, [[f32; 4]; 4]>,
-    pub lights: BufferData<Light, LightUniform>,
+    pub camera: BufferData<Camera>,
+    pub lights: BufferData<Light>,
     pub pipeline: Pipeline,
     depth_texture: Texture,
     camera_bind_group: BindGroup,
@@ -237,7 +237,7 @@ impl Renderer {
         let lights = BufferData::new(
             data,
             vec![Light {
-                pos: Vec3::new(3.0, 0.0, 2.0),
+                pos: Vec3::new(1.0, 1.0, 1.0),
             }],
             wgpu::BufferUsages::STORAGE,
         );
