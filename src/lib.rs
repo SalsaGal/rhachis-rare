@@ -237,7 +237,7 @@ impl Renderer {
         let lights = BufferData::new(
             data,
             vec![Light {
-                pos: Vec3::new(1.0, 1.0, 1.0),
+                pos: Vec3::new(0.0, 0.0, 0.0),
             }],
             wgpu::BufferUsages::STORAGE,
         );

@@ -6,6 +6,7 @@ struct VertexInput {
 struct VertexOutput {
     @builtin(position) pos: vec4<f32>,
     @location(0) tex_coords: vec2<f32>,
+    @location(1) world_pos: vec3<f32>,
 };
 
 struct Transform {
@@ -34,8 +35,10 @@ fn vertex_main(in: VertexInput, transform: Transform) -> VertexOutput {
     );
 
     var output: VertexOutput;
-    output.pos = camera_matrix * transform_matrix * vec4<f32>(in.pos, 1.0);
+    let world_pos = transform_matrix * vec4<f32>(in.pos, 1.0);
+    output.pos = camera_matrix * world_pos;
     output.tex_coords = in.tex_coords;
+    output.world_pos = world_pos.xyz;
     return output;
 }
 
@@ -45,7 +48,7 @@ var color_texture: texture_2d<f32>;
 var color_texture_sampler: sampler;
 
 struct Light {
-    pos: vec4<f32>,
+    pos: vec3<f32>,
 }
 
 struct LightArray {
@@ -58,5 +61,7 @@ var<storage> light: LightArray;
 @fragment
 fn fragment_main(in: VertexOutput) -> @location(0) vec4<f32> {
     let color = textureSample(color_texture, color_texture_sampler, in.tex_coords);
-    return color * light.lights[0].pos;
+    let dist = distance(light.lights[0].pos, in.world_pos);
+    let brightness = max(0.0, 1.0 - dist);
+    return color * vec4<f32>(brightness, brightness, brightness, 1.0);
 }
