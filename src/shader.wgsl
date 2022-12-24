@@ -66,8 +66,7 @@ var<storage> light: LightArray;
 fn fragment_main(in: VertexOutput) -> @location(0) vec4<f32> {
     let color = textureSample(color_texture, color_texture_sampler, in.tex_coords);
     let dist = distance(light.lights[0].pos, in.world_pos);
-    let brightness = saturate(1.0 - dist);
-    return color
-        * vec4<f32>(brightness, brightness, brightness, 1.0)
-        * vec4<f32>(light.lights[0].color, 1.0);
+    let light_direction = normalize(light.lights[0].pos - in.world_pos);
+    let light_facing = dot(in.normal, light_direction);
+    return vec4<f32>(light_facing, light_facing, light_facing, 1.0) * dist * color;
 }
