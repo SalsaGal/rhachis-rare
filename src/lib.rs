@@ -15,7 +15,7 @@ use rhachis::{
     renderers::{SimpleRenderer, Texture, Transform},
     GameData, IdMap,
 };
-use wgpu::{BindGroup, RenderPipeline};
+use wgpu::{BindGroup, Color, RenderPipeline};
 
 pub struct Renderer {
     pub models: IdMap<Model>,
@@ -238,6 +238,7 @@ impl Renderer {
             data,
             vec![Light {
                 pos: Vec3::new(0.0, 0.0, 0.0),
+                color: Color::RED,
             }],
             wgpu::BufferUsages::STORAGE,
         );

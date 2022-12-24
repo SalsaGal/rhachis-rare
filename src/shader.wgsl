@@ -49,6 +49,7 @@ var color_texture_sampler: sampler;
 
 struct Light {
     pos: vec3<f32>,
+    color: vec3<f32>,
 }
 
 struct LightArray {
@@ -63,5 +64,7 @@ fn fragment_main(in: VertexOutput) -> @location(0) vec4<f32> {
     let color = textureSample(color_texture, color_texture_sampler, in.tex_coords);
     let dist = distance(light.lights[0].pos, in.world_pos);
     let brightness = max(0.0, 1.0 - dist);
-    return color * vec4<f32>(brightness, brightness, brightness, 1.0);
+    return color
+        * vec4<f32>(brightness, brightness, brightness, 1.0)
+        * vec4<f32>(light.lights[0].color, 1.0);
 }

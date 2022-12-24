@@ -1,9 +1,11 @@
 use glam::Vec3;
 use rhachis::graphics::{Bindable, BufferCompatible};
+use wgpu::Color;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Light {
     pub pos: Vec3,
+    pub color: Color,
 }
 
 impl BufferCompatible for Light {
@@ -17,6 +19,7 @@ impl BufferCompatible for Light {
 #[derive(Clone, Copy, Debug, bytemuck::Pod, bytemuck::Zeroable)]
 pub struct LightUniform {
     pub pos: [f32; 4],
+    pub color: [f32; 4],
 }
 
 impl Bindable for LightUniform {
@@ -42,7 +45,13 @@ impl Bindable for LightUniform {
 impl From<Light> for LightUniform {
     fn from(value: Light) -> Self {
         LightUniform {
-            pos: value.pos.extend(1.0).to_array(),
+            pos: value.pos.extend(0.0).to_array(),
+            color: [
+                value.color.r as f32,
+                value.color.g as f32,
+                value.color.b as f32,
+                0.0,
+            ],
         }
     }
 }
