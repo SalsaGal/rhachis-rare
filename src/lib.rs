@@ -290,6 +290,7 @@ impl Renderer {
                         .map(|vertex| TextureVertex {
                             pos: vertex.position.into(),
                             tex_coords: vertex.tex_coords.into(),
+                            normals: vertex.normal.into(),
                         })
                         .collect();
                     let indices = model

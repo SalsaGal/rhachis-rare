@@ -53,6 +53,7 @@ impl Model {
 pub struct TextureVertex {
     pub pos: [f32; 3],
     pub tex_coords: [f32; 2],
+    pub normals: [f32; 3],
 }
 
 impl TextureVertex {
@@ -70,6 +71,11 @@ impl TextureVertex {
                     format: wgpu::VertexFormat::Float32x2,
                     offset: size_of::<[f32; 3]>() as u64,
                     shader_location: 1,
+                },
+                wgpu::VertexAttribute {
+                    format: wgpu::VertexFormat::Float32x3,
+                    offset: size_of::<[f32; 5]>() as u64,
+                    shader_location: 6,
                 },
             ],
         }
