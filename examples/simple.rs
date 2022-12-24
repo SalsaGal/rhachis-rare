@@ -37,17 +37,17 @@ impl Game for Simple {
                 TextureVertex {
                     pos: [0.0, 0.0, 0.0],
                     tex_coords: [0.0, 1.0],
-                    normals: [0.0, 0.0, -1.0],
+                    normals: [0.0, 0.0, 1.0],
                 },
                 TextureVertex {
                     pos: [1.0, 0.0, 0.0],
                     tex_coords: [1.0, 1.0],
-                    normals: [0.0, 0.0, -1.0],
+                    normals: [0.0, 0.0, 1.0],
                 },
                 TextureVertex {
                     pos: [0.0, 1.0, 0.0],
                     tex_coords: [0.0, 0.0],
-                    normals: [0.0, 0.0, -1.0],
+                    normals: [0.0, 0.0, 1.0],
                 },
             ],
             vec![0, 1, 2],
